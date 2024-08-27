@@ -45,8 +45,37 @@ const usersNewPost = [
     }
 ];
 
+//Search user
+
+async function usersSearchGet(req, res){
+    const searchTerm = req.query.keyword || '';
+
+    try{
+        const searchResult = await db.searchUsernames(searchTerm);
+        console.log("Search result: ", searchResult);
+        if(searchResult.length > 0){
+            res.send("Search result: " + searchResult.map(user => user.username).join(", "));
+        }else{
+            res.send("Search result: No users found.");
+        }
+    }catch(err){
+        console.error('Error searching usernames: ', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+//Delete users
+async function usersDelete(req,res){
+    console.log("Deleting all usernames!")
+    await db.deleteUsernames();
+    console.log("All usernames deleted!");
+    res.redirect("/");
+}
+
 module.exports = {
     getUsernames,
     usersNewGet,
-    usersNewPost
+    usersNewPost,
+    usersSearchGet,
+    usersDelete
 }
