@@ -1,3 +1,6 @@
+//Database
+const db = require('../db/queries');
+
 //Validation
 
 const { body, validationResult } = require("express-validator");
@@ -11,11 +14,13 @@ const validateUser = [
 
 //Create user views
 
-exports.usersListGet = (req, res) => {
-    console.log("usernames will be logged here - wip");
+async function getUsernames(req, res){
+    const usernames = await db.getAllUsernames();
+    console.log("Usernames: ", usernames);
+    res.send("Usernames: " + usernames.map(user => user.username).join(", "));
 };
 
-exports.usersNewGet = (req, res) => {
+async function usersNewGet(req, res){
     res.render("newUser", {
         title: "New user",
         formData: null,
@@ -23,9 +28,9 @@ exports.usersNewGet = (req, res) => {
 };
 
 // We can pass an entire array of middleware validations to our controller.
-exports.usersNewPost = [
+const usersNewPost = [
     validateUser,
-    (req, res) => {
+    async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).render("newUser", {
@@ -35,6 +40,13 @@ exports.usersNewPost = [
             });
         }
         const { username } = req.body;
-        console.log("username to be saved: ", req.body.username);
+        await db.insertUsername(username);
+        res.redirect("/");
     }
 ];
+
+module.exports = {
+    getUsernames,
+    usersNewGet,
+    usersNewPost
+}
